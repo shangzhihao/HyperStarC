@@ -6,4 +6,10 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "gradio>=5.23.3",
+    "scipy>=1.15.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
 ]

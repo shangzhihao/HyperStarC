@@ -1,20 +1,27 @@
 from abc import ABC, abstractmethod
+from typing import Tuple
 from cmath import phase
 from functools import reduce
 import math
-import re
 import numpy as np
 from numpy.typing import NDArray
+from scipy import linalg
 
 
 class AbcPhDist(ABC):
     def __init__(self) -> None:
         super().__init__()
-        self.mean = self.getMoment(1)
-        self.variance = self.getMoment(2) - self.mean**2
+        self._mean = self.get_moment(1)
+        self._variance = self.get_moment(2) - self._mean**2
         self._moments = {}
 
-    def getMoment(self, k: int) -> float:
+    def get_mean(self) -> float:
+        return self._mean
+
+    def get_var(self) -> float:
+        return self._variance
+
+    def get_moment(self, k: int) -> float:
         if k in self._moments:
             return self._moments[k]
         else:
@@ -63,7 +70,7 @@ class Erlang(AbcPhDist):
         self.phase = phase
 
     def _calcMoment(self, k: int) -> float:
-        res = reduce(lambda x, y: x * y, range(self.phase, self.phase + k))
+        res = math.prod(range(self.phase, self.phase + k))
         res /= self.rate**self.phase
         return res
 
@@ -97,8 +104,6 @@ class HyperErlangBranch:
 
 # Hyper-Erlang distribution
 # see https://en.wikipedia.org/wiki/Hyper-Erlang_distribution
-
-
 class HyperErlang(AbcPhDist):
     def __init__(self, branches: list[HyperErlangBranch]):
         self.branches = branches
@@ -129,7 +134,7 @@ class HyperErlang(AbcPhDist):
         dim = trans.shape[0]
         d0inv = np.linalg.inv(-trans)
         res = self.get_alpha()
-        res *= d0inv ** k
+        res *= d0inv**k
         res *= np.ones((dim, 1))
         res = math.factorial(k)
         return res
@@ -157,23 +162,49 @@ class HyperErlang(AbcPhDist):
         return res * branch.prob
 
 
-class PhDist(AbcPhDist):
-    def _calcMoment(self, k: int) -> float:
-        return 0
-
-    def pdf(self, x: float) -> float:
-        return 0
-
-    def cdf(self, x: float) -> float:
-        return 0
-
-
 class MAP(AbcPhDist):
+    def __init__(self, d0: NDArray, d1: NDArray):
+        assert len(d0.shape) == 2
+        assert d0.shape == d1.shape
+        self._d0 = d0
+        self._d1 = d1
+        self._dim = d0.shape[0]
+        # for computing
+        self._d0inv = np.linalg.inv(d0)
+        # embedded process
+        self._P = self._d0inv @ d1
+        # steady probability of P
+        # TODO : check if P is stable
+        self._limit_prob = self._P**1000
+
     def _calcMoment(self, k: int) -> float:
-        return 0
+        res = self._limit_prob @ (self._d0inv**k) @ np.ones((self._dim, 1))
+        res = res * math.factorial(k)
+        return res[0, 0]
+
+    def get_trans_matrix(self) -> Tuple[NDArray, NDArray]:
+        return (self._d0, self._d1)
+
+    def get_limit_prob(self) -> NDArray:
+        return self._limit_prob
 
     def pdf(self, x: float) -> float:
-        return 0
+        res = -self._d0 @ np.ones((self._dim, 1))
+        res = self._limit_prob @ (linalg.expm(self._d0 * x)) @ res
+        return res[0, 0]
 
     def cdf(self, x: float) -> float:
-        return 0
+        res = self._limit_prob @ (linalg.expm(self._d0 * x)) @ np.ones((self._dim, 1))
+        res = 1 - res[0, 0]
+        return res
+
+    def acf(self, k: int) -> float:
+        m_mean = (
+            self._limit_prob
+            @ self._d0inv
+            @ (self._P**k)
+            @ self._d0inv
+            * np.ones((self._dim, 1))
+        )
+        cov = m_mean[0, 0] - self.get_mean() ** 2
+        return cov / self.get_var()
