@@ -11,9 +11,9 @@ from scipy import linalg
 class AbcPhDist(ABC):
     def __init__(self) -> None:
         super().__init__()
+        self._moments = {}
         self._mean = self.get_moment(1)
         self._variance = self.get_moment(2) - self._mean**2
-        self._moments = {}
 
     def get_mean(self) -> float:
         return self._mean
@@ -44,20 +44,24 @@ class AbcPhDist(ABC):
 
 class Exponential(AbcPhDist):
     def __init__(self, rate: float) -> None:
-        super().__init__()
+        if rate <= 0:
+            raise ValueError("rate must be positive")
         self.rate = rate
+        super().__init__()
 
     def _calcMoment(self, k: int) -> float:
-        assert k >= 0
+        if int(k) != k or k < 1:
+            raise ValueError("k must be integer and greater than 0")
+
         return math.factorial(k) / self.rate**k
-
+    # f(x) = \lambda e^{-\lambda x}
     def pdf(self, x: float) -> float:
-        assert x >= 0
-        return self.rate * math.exp(-self.rate * x)
-
+        res = self.rate * math.exp(-self.rate * x)
+        return res * (x >=0)
+    # F(x) = 1 - e^{-\lambda x}
     def cdf(self, x: float) -> float:
-        assert x >= 0
-        return 1 - math.exp(-self.rate * x)
+        res =  1 - math.exp(-self.rate * x)
+        return res * (x >=0)
 
 
 # erlang distribution with phase parameter and rate parameter
@@ -66,20 +70,30 @@ class Exponential(AbcPhDist):
 # phase = mean*rate
 class Erlang(AbcPhDist):
     def __init__(self, rate: float, phase: int):
+        if rate <= 0:
+            raise ValueError("rate must be positive")
+        if phase <= 0:
+            raise ValueError("phase must be positive")
+        if int(phase) != phase:
+            raise ValueError("phase must be integer")   
         self.rate = rate
         self.phase = phase
-
+        super().__init__()
+    # \frac{\Gamma(k + r)}{\Gamma(k)}
+    # \cdot \frac{1}{\lambda^r}
     def _calcMoment(self, k: int) -> float:
+        if int(k) != k or k < 1:
+            raise ValueError("k must be integer and greater than 0")
         res = math.prod(range(self.phase, self.phase + k))
-        res /= self.rate**self.phase
+        res /= self.rate**k
         return res
-
+    # f(x) = \frac{\lambda^k x^{k-1} e^{-\lambda x}}{(k-1)!}
     def pdf(self, x: float) -> float:
         x1 = self.rate**self.phase
         x2 = x ** (self.phase - 1)
         x3 = math.exp(-self.rate * x)
         return x1 * x2 * x3 / math.factorial(self.phase - 1)
-
+    # F(x) = 1 - \sum_{n=0}^{k-1} \frac{(\lambda x)^n}{n!} e^{-\lambda x}
     def cdf(self, x: float) -> float:
         res = 0
         for i in range(self.phase):
@@ -90,16 +104,20 @@ class Erlang(AbcPhDist):
 
     def get_trans_matrix(self) -> NDArray:
         res = np.zeros((self.phase, self.phase))
-        for i in range(self.phase):
+        for i in range(self.phase-1):
             res[i, i] = -self.rate
             res[i, i + 1] = self.rate
+        res[self.phase - 1, self.phase - 1] = -self.rate
         return res
 
 
 class HyperErlangBranch:
     def __init__(self, dist: Erlang, prob: float):
+        if prob <= 0 or prob >= 1:
+            raise ValueError("probiblity of an Erlang branch must be in (0, 1)")
         self.erlang = dist
         self.prob = prob
+        super().__init__()
 
 
 # Hyper-Erlang distribution
@@ -107,9 +125,10 @@ class HyperErlangBranch:
 class HyperErlang(AbcPhDist):
     def __init__(self, branches: list[HyperErlangBranch]):
         self.branches = branches
-        self.phase = self._get_phase()
+        self.phase = self.get_phase()
+        super().__init__()
 
-    def _get_phase(self) -> int:
+    def get_phase(self) -> int:
         return sum(branch.erlang.phase for branch in self.branches)
 
     def get_alpha(self) -> NDArray:
@@ -130,21 +149,29 @@ class HyperErlang(AbcPhDist):
         return res
 
     def _calcMoment(self, k: int) -> float:
+        if int(k) != k or k < 1:
+            raise ValueError("k must be integer and greater than 0")
+
         trans = self.get_trans_matrix()
         dim = trans.shape[0]
         d0inv = np.linalg.inv(-trans)
         res = self.get_alpha()
-        res *= d0inv**k
+        res = np.expand_dims(res, -1) * d0inv**k
         res *= np.ones((dim, 1))
         res = math.factorial(k)
         return res
-
+    # f(x) = \sum_{i=1}^N p_i \cdot 
+    # \frac{\lambda_i^{k_i} x^{k_i - 1} e^{-\lambda_i x}}
+    # {(k_i - 1)!}
     def pdf(self, x: float) -> float:
         res = 0.0
         for branch in self.branches:
             res += branch.erlang.pdf(x) * branch.prob
         return res
-
+    # F(x) = \sum_{i=1}^N p_i \cdot 
+    # \left(1 - \sum_{n=0}^{k_i - 1} 
+    # \frac{(\lambda_i x)^n}{n!} 
+    # e^{-\lambda_i x} \right)
     def cdf(self, x: float) -> float:
         res = 0.0
         for branch in self.branches:
@@ -164,8 +191,13 @@ class HyperErlang(AbcPhDist):
 
 class MAP(AbcPhDist):
     def __init__(self, d0: NDArray, d1: NDArray):
-        assert len(d0.shape) == 2
-        assert d0.shape == d1.shape
+        # d0: transition matrix without an arrival
+        # d1: transition matrix with an arrival
+        if len(d0.shape) != 2:
+            raise ValueError("d0 and d1 must be 2-D array")
+        if d0.shape != d1.shape:
+            raise ValueError("d0 and d1 must have the same shape")
+
         self._d0 = d0
         self._d1 = d1
         self._dim = d0.shape[0]
@@ -176,8 +208,12 @@ class MAP(AbcPhDist):
         # steady probability of P
         # TODO : check if P is stable
         self._limit_prob = self._P**1000
+        super().__init__()
 
     def _calcMoment(self, k: int) -> float:
+        if int(k) != k or k < 1:
+            raise ValueError("k must be integer and greater than 0")
+
         res = self._limit_prob @ (self._d0inv**k) @ np.ones((self._dim, 1))
         res = res * math.factorial(k)
         return res[0, 0]
@@ -208,3 +244,14 @@ class MAP(AbcPhDist):
         )
         cov = m_mean[0, 0] - self.get_mean() ** 2
         return cov / self.get_var()
+
+
+if __name__ == "__main__":
+    import pytest
+    e1 = Erlang(rate=1.0, phase=1)
+    e2 = Erlang(rate=2.0, phase=2)
+    b1 = HyperErlangBranch(e1, prob=0.4)
+    b2 = HyperErlangBranch(e2, prob=0.6)
+    dist = HyperErlang([b1, b2])
+    assert dist.pdf(0.0) == pytest.approx(b1.erlang.pdf(0.0) * 0.4 + b2.erlang.pdf(0.0) * 0.6)
+    assert dist.cdf(0.0) == pytest.approx(0.0)
