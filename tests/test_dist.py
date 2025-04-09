@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from src.dist import Exponential, Erlang, HyperErlang, HyperErlangBranch, MAP
+from scipy.stats import erlang
 
 def test_exponential():
     lam = 2.0
@@ -14,8 +15,14 @@ def test_erlang():
     rate = 3.0
     phase = 2
     dist = Erlang(rate=rate, phase=phase)
-    assert dist.pdf(0.0) == 0.0
-    assert dist.cdf(0.0) == 0.0
+    x = 5.0
+    y = dist.pdf(x)
+    # a: shape, loc: shift, scale: 1/rate
+    y_exp = erlang.pdf(x=x, a=phase, loc=0, scale=1/rate)
+    y = dist.cdf(x)
+    y_exp = erlang.cdf(x=x, a=phase, loc=0, scale=1/rate)
+    assert y == pytest.approx(y_exp)
+    
     assert dist.get_mean() == pytest.approx(phase / rate)
     assert dist.get_var() == pytest.approx(phase / rate**2)
 
