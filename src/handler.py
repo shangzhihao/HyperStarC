@@ -1,9 +1,13 @@
-from numpy.typing import NDArray
-import numpy as np
-from pathlib import Path
 import logging
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.figure import Figure
+from numpy.typing import NDArray
+
+from . import config
+
 
 def upload_samples(filepath: str)->Figure|None:
     samples = read_samples(filepath)
@@ -18,11 +22,19 @@ def read_samples(filepath: str)->NDArray|None:
 
     try:
         res = np.loadtxt(filepath)
-    except:
-        logging.error("cannot load file")
+    except (IOError, OSError) as e:
+        logging.error(f"Error loading file: {e}")
         return None
+    except ValueError as e:
+        logging.error(f"Error in file format: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"An unexpected error occurred: {e}")
+        return None
+    
     if len(res.shape) == 2:
-        return res[:, 0]
+        res = res[:, 0]
+    config.samples = res
     return res
 
 

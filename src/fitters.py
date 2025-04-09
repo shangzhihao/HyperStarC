@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
+
 from numpy.typing import NDArray
+
 from .dist import AbcPhDist
+
 
 class Fitter(ABC):
     def __init__(self) -> None:

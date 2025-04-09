@@ -1,7 +1,9 @@
 import numpy as np
 import pytest
-from src.dist import Exponential, Erlang, HyperErlang, HyperErlangBranch, MAP
 from scipy.stats import erlang
+
+from src.dist import MAP, Erlang, Exponential, HyperErlang, HyperErlangBranch
+
 
 def test_exponential():
     lam = 2.0

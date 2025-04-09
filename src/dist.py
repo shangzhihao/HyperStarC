@@ -1,6 +1,7 @@
+import math
 from abc import ABC, abstractmethod
 from typing import Tuple
-import math
+
 import numpy as np
 from numpy.typing import NDArray
 from scipy import linalg
@@ -9,7 +10,7 @@ from scipy import linalg
 class AbcPhDist(ABC):
     def __init__(self) -> None:
         super().__init__()
-        self._moments = {}
+        self._moments: dict[int, float] = {}
         self._mean = self.get_moment(1)
         self._variance = self.get_moment(2) - self._mean**2
 
@@ -82,7 +83,7 @@ class Erlang(AbcPhDist):
     def _calcMoment(self, k: int) -> float:
         if int(k) != k or k < 1:
             raise ValueError("k must be integer and greater than 0")
-        res = math.prod(range(self.phase, self.phase + k))
+        res: float = math.prod(range(self.phase, self.phase + k))
         res /= self.rate**k
         return res
     # f(x) = \frac{\lambda^k x^{k-1} e^{-\lambda x}}{(k-1)!}
@@ -93,7 +94,7 @@ class Erlang(AbcPhDist):
         return x1 * x2 * x3 / math.factorial(self.phase - 1)
     # F(x) = 1 - \sum_{n=0}^{k-1} \frac{(\lambda x)^n}{n!} e^{-\lambda x}
     def cdf(self, x: float) -> float:
-        res = 0
+        res = .0
         for i in range(self.phase):
             x1 = (self.rate * x) ** i
             x2 = math.exp(-self.rate * x)
@@ -155,9 +156,8 @@ class HyperErlang(AbcPhDist):
         d0inv = np.linalg.inv(-trans)
         res = self.get_alpha()
         res = np.expand_dims(res, -1) * d0inv**k
-        res *= np.ones((dim, 1))
-        res = math.factorial(k)
-        return res
+        res =res @ np.ones((dim, 1))
+        return res[0, 0] * math.factorial(k)
     # f(x) = \sum_{i=1}^N p_i \cdot 
     # \frac{\lambda_i^{k_i} x^{k_i - 1} e^{-\lambda_i x}}
     # {(k_i - 1)!}
@@ -173,10 +173,10 @@ class HyperErlang(AbcPhDist):
     def cdf(self, x: float) -> float:
         res = 0.0
         for branch in self.branches:
-            res += branch.erlang.cdf(x)
+            res += self.cdf_branch(branch, x)    
         return 1 - res
 
-    def cdfBranch(self, branch: HyperErlangBranch, x: float) -> float:
+    def cdf_branch(self, branch: HyperErlangBranch, x: float) -> float:
         temp, res = 0.0, 0.0
         for i in range(branch.erlang.phase):
             temp = branch.erlang.rate * x

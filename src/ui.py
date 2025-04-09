@@ -1,5 +1,5 @@
 import gradio as gr
-import numpy as np
+
 from .handler import upload_samples
 
 DISTS = ["Exponential", "Erlang", "Hyper-Erlang", "MAP"]
