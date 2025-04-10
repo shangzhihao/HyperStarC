@@ -21,7 +21,7 @@ def read_samples(filepath: str)->NDArray|None:
         return None
 
     try:
-        res = np.loadtxt(filepath)
+        res = np.squeeze(np.loadtxt(filepath))
     except (IOError, OSError) as e:
         logging.error(f"Error loading file: {e}")
         return None
@@ -31,9 +31,8 @@ def read_samples(filepath: str)->NDArray|None:
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")
         return None
-    
-    if len(res.shape) == 2:
-        res = res[:, 0]
+    if res.ndim != 1:
+        raise ValueError("samples must be 1-dimentional")
     config.samples = res
     return res
 

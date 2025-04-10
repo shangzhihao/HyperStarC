@@ -10,8 +10,8 @@ def test_exponential():
     dist = Exponential(rate=lam)
     assert dist.pdf(0.0) == pytest.approx(lam)
     assert dist.cdf(0.0) == 0.0
-    assert dist.get_mean() == pytest.approx(1 / lam)
-    assert dist.get_var() == pytest.approx(1 / lam**2)
+    assert dist.mean == pytest.approx(1 / lam)
+    assert dist.var == pytest.approx(1 / lam**2)
 
 def test_erlang():
     rate = 3.0
@@ -25,8 +25,8 @@ def test_erlang():
     y_exp = erlang.cdf(x=x, a=phase, loc=0, scale=1/rate)
     assert y == pytest.approx(y_exp)
     
-    assert dist.get_mean() == pytest.approx(phase / rate)
-    assert dist.get_var() == pytest.approx(phase / rate**2)
+    assert dist.mean == pytest.approx(phase / rate)
+    assert dist.var == pytest.approx(phase / rate**2)
 
 def test_hyper_erlang():
     e1 = Erlang(rate=1.0, phase=1)
@@ -45,8 +45,8 @@ def test_map():
     dist = MAP(d0=D0, d1=D1)
     assert dist.pdf(0.0) >= 0
     assert 0.0 <= dist.cdf(0.1) <= 1.0
-    assert dist.get_mean() > 0
-    assert dist.get_var() > 0
+    assert dist.mean > 0
+    assert dist.var > 0
     assert isinstance(dist.get_trans_matrix(), tuple)
     assert dist.get_limit_prob().shape == (2, 2)
 

@@ -11,14 +11,6 @@ class AbcPhDist(ABC):
     def __init__(self) -> None:
         super().__init__()
         self._moments: dict[int, float] = {}
-        self._mean = self.get_moment(1)
-        self._variance = self.get_moment(2) - self._mean**2
-
-    def get_mean(self) -> float:
-        return self._mean
-
-    def get_var(self) -> float:
-        return self._variance
 
     def get_moment(self, k: int) -> float:
         if k in self._moments:
@@ -27,6 +19,14 @@ class AbcPhDist(ABC):
             res = self._calcMoment(k)
             self._moments[k] = res
             return res
+
+    @property
+    def mean(self):
+        return self.get_moment(1)
+
+    @property
+    def var(self):
+        return self.get_moment(2) - self.get_moment(1) ** 2
 
     @abstractmethod
     def _calcMoment(self, k: int) -> float:
@@ -39,6 +39,13 @@ class AbcPhDist(ABC):
     @abstractmethod
     def cdf(self, x: float) -> float:
         pass
+
+    def llh(self, samples: NDArray) -> float:
+        if not np.squeeze(samples).ndim == 1:
+            raise ValueError("samples must be 1-dimentional")
+        lh = map(self.pdf, samples)
+        llh = map(math.log, lh)
+        return math.prod(llh)
 
 
 class Exponential(AbcPhDist):
@@ -53,14 +60,16 @@ class Exponential(AbcPhDist):
             raise ValueError("k must be integer and greater than 0")
 
         return math.factorial(k) / self.rate**k
+
     # f(x) = \lambda e^{-\lambda x}
     def pdf(self, x: float) -> float:
         res = self.rate * math.exp(-self.rate * x)
-        return res * (x >=0)
+        return res * (x >= 0)
+
     # F(x) = 1 - e^{-\lambda x}
     def cdf(self, x: float) -> float:
-        res =  1 - math.exp(-self.rate * x)
-        return res * (x >=0)
+        res = 1 - math.exp(-self.rate * x)
+        return res * (x >= 0)
 
 
 # erlang distribution with phase parameter and rate parameter
@@ -74,10 +83,11 @@ class Erlang(AbcPhDist):
         if phase <= 0:
             raise ValueError("phase must be positive")
         if int(phase) != phase:
-            raise ValueError("phase must be integer")   
+            raise ValueError("phase must be integer")
         self.rate = rate
         self.phase = phase
         super().__init__()
+
     # \frac{\Gamma(k + r)}{\Gamma(k)}
     # \cdot \frac{1}{\lambda^r}
     def _calcMoment(self, k: int) -> float:
@@ -86,15 +96,17 @@ class Erlang(AbcPhDist):
         res: float = math.prod(range(self.phase, self.phase + k))
         res /= self.rate**k
         return res
+
     # f(x) = \frac{\lambda^k x^{k-1} e^{-\lambda x}}{(k-1)!}
     def pdf(self, x: float) -> float:
         x1 = self.rate**self.phase
         x2 = x ** (self.phase - 1)
         x3 = math.exp(-self.rate * x)
         return x1 * x2 * x3 / math.factorial(self.phase - 1)
+
     # F(x) = 1 - \sum_{n=0}^{k-1} \frac{(\lambda x)^n}{n!} e^{-\lambda x}
     def cdf(self, x: float) -> float:
-        res = .0
+        res = 0.0
         for i in range(self.phase):
             x1 = (self.rate * x) ** i
             x2 = math.exp(-self.rate * x)
@@ -103,7 +115,7 @@ class Erlang(AbcPhDist):
 
     def get_trans_matrix(self) -> NDArray:
         res = np.zeros((self.phase, self.phase))
-        for i in range(self.phase-1):
+        for i in range(self.phase - 1):
             res[i, i] = -self.rate
             res[i, i + 1] = self.rate
         res[self.phase - 1, self.phase - 1] = -self.rate
@@ -156,9 +168,10 @@ class HyperErlang(AbcPhDist):
         d0inv = np.linalg.inv(-trans)
         res = self.get_alpha()
         res = np.expand_dims(res, -1) * d0inv**k
-        res =res @ np.ones((dim, 1))
+        res = res @ np.ones((dim, 1))
         return res[0, 0] * math.factorial(k)
-    # f(x) = \sum_{i=1}^N p_i \cdot 
+
+    # f(x) = \sum_{i=1}^N p_i \cdot
     # \frac{\lambda_i^{k_i} x^{k_i - 1} e^{-\lambda_i x}}
     # {(k_i - 1)!}
     def pdf(self, x: float) -> float:
@@ -166,14 +179,15 @@ class HyperErlang(AbcPhDist):
         for branch in self.branches:
             res += branch.erlang.pdf(x) * branch.prob
         return res
-    # F(x) = \sum_{i=1}^N p_i \cdot 
-    # \left(1 - \sum_{n=0}^{k_i - 1} 
-    # \frac{(\lambda_i x)^n}{n!} 
+
+    # F(x) = \sum_{i=1}^N p_i \cdot
+    # \left(1 - \sum_{n=0}^{k_i - 1}
+    # \frac{(\lambda_i x)^n}{n!}
     # e^{-\lambda_i x} \right)
     def cdf(self, x: float) -> float:
         res = 0.0
         for branch in self.branches:
-            res += self.cdf_branch(branch, x)    
+            res += self.cdf_branch(branch, x)
         return 1 - res
 
     def cdf_branch(self, branch: HyperErlangBranch, x: float) -> float:
@@ -246,10 +260,13 @@ class MAP(AbcPhDist):
 
 if __name__ == "__main__":
     import pytest
+
     e1 = Erlang(rate=1.0, phase=1)
     e2 = Erlang(rate=2.0, phase=2)
     b1 = HyperErlangBranch(e1, prob=0.4)
     b2 = HyperErlangBranch(e2, prob=0.6)
     dist = HyperErlang([b1, b2])
-    assert dist.pdf(0.0) == pytest.approx(b1.erlang.pdf(0.0) * 0.4 + b2.erlang.pdf(0.0) * 0.6)
+    assert dist.pdf(0.0) == pytest.approx(
+        b1.erlang.pdf(0.0) * 0.4 + b2.erlang.pdf(0.0) * 0.6
+    )
     assert dist.cdf(0.0) == pytest.approx(0.0)
