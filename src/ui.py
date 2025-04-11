@@ -31,7 +31,7 @@ with page:
 
 
             gr.Markdown("### Fitting Parameters")
-            fitter = gr.Dropdown(config.DISTS, label="Distribution")
+            fitter_dropdown = gr.Dropdown(config.FITTER_NAMES, label="Distribution")
             with gr.Row() as exp_block:
                 gr.Markdown("no parameters")
             with gr.Row(visible=False) as erlang_block:
@@ -49,7 +49,7 @@ with page:
 
     
     # set event handlers
-    fitter.change(fn=fitter_change, inputs=[fitter], outputs=[exp_block, erlang_block, hyper_block, map_block])
+    fitter_dropdown.change(fn=fitter_change, inputs=[fitter_dropdown], outputs=[exp_block, erlang_block, hyper_block, map_block])
     load_btn.upload(fn=upload_samples, inputs=load_btn, outputs=pdf_plot)
     replot_btn.click(fn=replot_click, outputs=pdf_plot)
     sample_percentage.change(fn=sample_percentage_change, inputs=sample_percentage)
