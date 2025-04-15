@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
+from tkinter import E
 from typing import Literal
 import numpy as np
 from numpy.typing import NDArray
+
+from src.config import ERMD, ROUNDING
 
 from .dist import AbcPhDist, Erlang, HyperErlang, MAP, Exponential
 
@@ -32,54 +35,44 @@ class ExponentialFitter(Fitter):
 class ErlangFitter(Fitter):
     def __init__(
         self,
-        fitter: Literal["mle", "mom"] = "mle",
-        mle_floor: bool = True,
+        method: ERMD = ERMD.MLE,
+        rounding: ROUNDING = ROUNDING.ROUND,
         max_phase=1000,
     ) -> None:
         super().__init__()
-        self.fitter = fitter
-        self.mle_floor = mle_floor
+        self.method = method
+        self.rounding = rounding
         self.max_phase = max_phase
 
     def _fit(self, samples: NDArray) -> AbcPhDist:
-        if self.fitter == "mle":
-            if self.mle_floor:
-                return self._mle_fit_floor(samples)
-            else:
-                return self._mle_fit_ceil(samples)
-        elif self.fitter == "mom":
-            if self.mle_floor:
-                return self._mom_fit_floor(samples)
-            else:
-                return self._mom_fit_ceil(samples)
+        if self.method == ERMD.MLE:
+            return self._mle_fit(samples)
+        elif self.method == ERMD.MOM:
+            return self._mom_fit(samples)
         else:
             raise ValueError("fitter must be 'mle' or 'mom'")
 
-    def _mom_fit_floor(self, samples: NDArray) -> AbcPhDist:
+    def _mom_fit(self, samples: NDArray) -> AbcPhDist:
         sample_mean = np.mean(samples)
-        phase = np.floor(self._mom_calc_phase(samples))
+        if self.rounding == ROUNDING.CEIL:
+            phase = np.ceil(self._mom_calc_phase(samples))
+        elif self.rounding == ROUNDING.FLOOR:
+            phase = np.floor(self._mom_calc_phase(samples))
+        else:
+            phase = np.round(self._mom_calc_phase(samples))
         rate = float(phase / sample_mean)
-        return Erlang(rate, phase)
+        return Erlang(rate, int(phase))
 
-    def _mom_fit_ceil(self, samples: NDArray) -> AbcPhDist:
+    def _mle_fit(self, samples: NDArray) -> AbcPhDist:
         sample_mean = np.mean(samples)
-        phase = np.ceil(self._mom_calc_phase(samples))
-
+        if self.rounding == ROUNDING.CEIL:
+            phase = np.ceil(self._mle_calc_phase(samples))
+        elif self.rounding == ROUNDING.FLOOR:
+            phase = np.floor(self._mle_calc_phase(samples))
+        else:
+            phase = np.round(self._mle_calc_phase(samples))
         rate = float(phase / sample_mean)
-        return Erlang(rate, phase)
-
-    def _mle_fit_floor(self, samples: NDArray) -> AbcPhDist:
-        sample_mean = np.mean(samples)
-        phase = np.floor(self._mle_calc_phase(samples))
-        rate = float(phase / sample_mean)
-        return Erlang(rate, phase)
-
-    def _mle_fit_ceil(self, samples: NDArray) -> AbcPhDist:
-        sample_mean = np.mean(samples)
-        phase = np.ceil(self._mle_calc_phase(samples))
-
-        rate = float(phase / sample_mean)
-        return Erlang(rate, phase)
+        return Erlang(rate, int(phase))
 
     def _mom_calc_phase(self, samples: NDArray) -> float:
         sample_mean = np.mean(samples)

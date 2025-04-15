@@ -47,13 +47,12 @@ with page:
                 fit_btn = gr.Button("Fit")
                 export_btn = gr.Button("Export")
 
-    
+
     # set event handlers
     fitter_dropdown.change(fn=fitter_change, inputs=[fitter_dropdown], outputs=[exp_block, erlang_block, hyper_block, map_block])
     load_btn.upload(fn=upload_samples, inputs=load_btn, outputs=pdf_plot)
     replot_btn.click(fn=replot_click, outputs=pdf_plot)
     sample_percentage.change(fn=sample_percentage_change, inputs=sample_percentage)
     sample_num.change(fn=sample_num_change, inputs=sample_num)
-
     fit_btn.click(fn=fit_click, outputs=pdf_plot)
 

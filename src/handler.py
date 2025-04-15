@@ -1,14 +1,12 @@
-import dis
 import logging
 from pathlib import Path
-from typing import Literal, TypeAlias
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 from numpy.typing import NDArray
 
-from src.fitters import ExponentialFitter, Fitter
+from src.fitters import ErlangFitter, ExponentialFitter, Fitter
 
 from . import config
 import gradio as gr
@@ -54,8 +52,9 @@ def gen_hist(data: NDArray)->Figure:
     fig, ax = plt.subplots()
     ax.hist(data1d, bins=config.hist_bins, color='red', alpha=0.6, density=True)
     ax.set_xlabel("samples")
-    ax.set_ylabel("histogram")
-    ax.legend(f"{num_sample} samples")
+    ax.set_ylabel("histogram", color='red')
+    # ax.legend(f"{num_sample} samples")
+    plt.tight_layout()
     return fig
 
 def replot_click()->Figure|None:
@@ -78,7 +77,10 @@ def fit_click()->Figure|None:
     smp_max = np.max(config.samples)
     x = np.linspace(smp_min, smp_max, 100)
     y = [dist.pdf(i) for i in x]
-    fig.axes[0].plot(x, y, color='blue')
+    ax2 = fig.axes[0].twinx()
+    ax2.plot(x, y, color='blue')
+    ax2.set_ylabel("pdf", color='blue')
+    plt.tight_layout()
     return fig
 
 # Update ui based on selected fitter
@@ -105,4 +107,6 @@ def sample_percentage_change(num: int):
 def make_fitter()->Fitter|None:
     if config.selected_fitter == config.FITTERS.Exponential:
         return ExponentialFitter()
+    if config.selected_fitter == config.FITTERS.Erlang:
+        return ErlangFitter(method=config.erlang_method, rounding=config.eralng_rounding, max_phase=config.erlang_max_phase)
     return None
