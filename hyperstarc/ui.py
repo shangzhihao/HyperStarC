@@ -79,11 +79,11 @@ with page:
         inputs=[fitter_dropdown],
         outputs=[exp_block, erlang_block, hyper_block, map_block],
     )
-    load_btn.upload(fn=upload_samples, inputs=load_btn, outputs=pdf_plot)
-    replot_btn.click(fn=replot_click, outputs=pdf_plot)
+    load_btn.upload(fn=upload_samples, inputs=load_btn, outputs=(pdf_plot, cdf_plot))
+    replot_btn.click(fn=replot_click, outputs=(pdf_plot, cdf_plot))
     sample_percentage.change(fn=sample_percentage_change, inputs=sample_percentage)
     sample_num.change(fn=sample_num_change, inputs=sample_num)
-    fit_btn.click(fn=fit_click, outputs=pdf_plot)
+    fit_btn.click(fn=fit_click, outputs=(pdf_plot, cdf_plot))
     er_fit_md.change(fn=er_fit_md_cange, inputs=er_fit_md)
     er_round.change(fn=er_round_change, inputs=er_round)
     er_max_phase.change(fn=er_max_phase_change, inputs=er_max_phase)

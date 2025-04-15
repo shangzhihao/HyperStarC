@@ -1,5 +1,6 @@
 # handlers for samples
 
+from ast import Tuple
 import logging
 from pathlib import Path
 
@@ -8,17 +9,16 @@ from matplotlib.figure import Figure
 from numpy.typing import NDArray
 
 from . import config
-from .plot_handler import gen_hist
+from .plot_handler import gen_hist, gen_sa_cdf
 
 logger = logging.getLogger(__name__)
 
-
 # upload samples and draw histogram
-def upload_samples(filepath: str) -> Figure | None:
+def upload_samples(filepath: str):
     samples = _read_samples(filepath)
     if samples is None:
         return None
-    return gen_hist(samples)
+    return gen_hist(samples), gen_sa_cdf(samples)
 
 
 # read samples from given file path and t

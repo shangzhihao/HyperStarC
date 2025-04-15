@@ -7,33 +7,40 @@ from matplotlib.figure import Figure
 
 from . import config
 from .fitters import ErlangFitter, ExponentialFitter, Fitter
-from .plot_handler import gen_hist
+from .plot_handler import gen_hist, gen_sa_cdf
 
 logger = logging.getLogger(__name__)
 
 
 # event handler for fit button
-def fit_click() -> Figure | None:
-    if config.samples is None:
+def fit_click():
+    no_figs = (None, None)
+    if config.selected_samples is None:
         logger.error("No samples loaded")
-        return None
+        return no_figs
     fitter = make_fitter()
     if fitter is None:
         logger.error("No fitter selected")
-        return None
-    dist = fitter.fit(config.samples)
-    fig = gen_hist(config.samples)
-    if fig is None:
-        return None
-    smp_min = np.min(config.samples)
-    smp_max = np.max(config.samples)
+        return no_figs
+    dist = fitter.fit(config.selected_samples)
+    pdf_fig = gen_hist(config.selected_samples)
+    cdf_fig = gen_sa_cdf(config.selected_samples)
+    smp_min = np.min(config.selected_samples)
+    smp_max = np.max(config.selected_samples)
     x = np.linspace(smp_min, smp_max, 100)
-    y = [dist.pdf(i) for i in x]
-    ax2 = fig.axes[0].twinx()
-    ax2.plot(x, y, color="blue")
-    ax2.set_ylabel("pdf", color="blue")
-    plt.tight_layout()
-    return fig
+    if pdf_fig is not None:
+        y = [dist.pdf(i) for i in x]
+        ax2 = pdf_fig.axes[0].twinx()
+        ax2.plot(x, y, color="blue")
+        ax2.set_ylabel("pdf", color="blue")
+        pdf_fig.tight_layout()
+    if cdf_fig is not None:
+        y = [dist.cdf(i) for i in x]
+        ax2 = cdf_fig.axes[0].twinx()
+        ax2.plot(x, y, color="blue")
+        ax2.set_ylabel("cdf", color="blue")
+        cdf_fig.tight_layout()
+    return pdf_fig, cdf_fig
 
 
 # Update ui based on selected fitter
