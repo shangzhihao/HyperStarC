@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
+
 import numpy as np
 from numpy.typing import NDArray
 
-from src.config import ERMD, ROUNDING
-
-from .dist import MAP, AbcPhDist, Erlang, Exponential, HyperErlang
+from .config import ERMD, ROUNDING
+from .dist import AbcPhDist, Erlang, Exponential
 
 
 class Fitter(ABC):

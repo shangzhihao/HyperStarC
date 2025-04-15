@@ -4,6 +4,7 @@ from numpy.typing import NDArray
 
 # samples
 samples: NDArray | None = None
+selected_samples: NDArray | None = None
 sample_percent = 100
 total_sample = 1000
 
@@ -21,6 +22,10 @@ selected_fitter = FITTERS.Exponential
 
 # draw
 hist_bins = 200
+max_bins = 1000
+min_bins = 50
+max_x = 0
+min_x = 0
 
 
 # erlang parameters

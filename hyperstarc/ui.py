@@ -1,17 +1,13 @@
 import gradio as gr
 
 from . import config
-from .handler import (
-    er_fit_md_cange,
-    er_max_phase_change,
-    er_round_change,
-    fit_click,
-    fitter_change,
-    replot_click,
-    sample_num_change,
-    sample_percentage_change,
-    upload_samples,
-)
+from .erlang_handler import (er_fit_md_cange, er_max_phase_change,
+                             er_round_change)
+from .fit_handler import fit_click, fitter_change
+from .plot_handler import (bins_num_change, max_x_change, min_x_change,
+                           replot_click)
+from .sam_handler import (sample_num_change, sample_percentage_change,
+                          upload_samples)
 
 page = gr.Blocks(title="HyperStarC")
 
@@ -19,18 +15,22 @@ with page:
     gr.Markdown("## HyperStarC")
     with gr.Row():
         with gr.Column(scale=3):
-            tab = gr.Tabs()
-            with tab:
-                with gr.Tab("PDF"):
-                    pdf_plot = gr.Plot(label="PDF")
-                with gr.Tab("CDF"):
-                    cdf_plot = gr.Plot(label="CDF")
-                with gr.Tab("Correlation"):
-                    corr_plot = gr.Plot(label="Correlation")
+            pdf_plot = gr.Plot(label="PDF", visible=True)
+            cdf_plot = gr.Plot(label="CDF", visible=True)
+            corr_plot = gr.Plot(label="Correlation", visible=False)
 
         with gr.Column(scale=1):
             gr.Markdown("### Load Samples")
             load_btn = gr.UploadButton("Load Samples")
+            bins_num = gr.Number(
+                value=config.hist_bins,
+                label="number of bins",
+                interactive=True,
+                maximum=config.max_bins,
+                minimum=config.min_bins,
+            )
+            max_x = gr.Number(value=config.max_x, label="max x for plotting", interactive=True)
+            min_x = gr.Number(value=config.min_x, label="min x for plotting", interactive=True)
             replot_btn = gr.Button("Replot")
 
             gr.Markdown("### Number of Samples")
@@ -87,3 +87,6 @@ with page:
     er_fit_md.change(fn=er_fit_md_cange, inputs=er_fit_md)
     er_round.change(fn=er_round_change, inputs=er_round)
     er_max_phase.change(fn=er_max_phase_change, inputs=er_max_phase)
+    bins_num.change(fn=bins_num_change, inputs=bins_num)
+    max_x.change(fn=max_x_change, inputs=max_x)
+    min_x.change(fn=min_x_change, inputs=min_x)
