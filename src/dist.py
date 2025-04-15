@@ -254,19 +254,5 @@ class MAP(AbcPhDist):
             @ self._d0inv
             * np.ones((self._dim, 1))
         )
-        cov = m_mean[0, 0] - self.get_mean() ** 2
-        return cov / self.get_var()
-
-
-if __name__ == "__main__":
-    import pytest
-
-    e1 = Erlang(rate=1.0, phase=1)
-    e2 = Erlang(rate=2.0, phase=2)
-    b1 = HyperErlangBranch(e1, prob=0.4)
-    b2 = HyperErlangBranch(e2, prob=0.6)
-    dist = HyperErlang([b1, b2])
-    assert dist.pdf(0.0) == pytest.approx(
-        b1.erlang.pdf(0.0) * 0.4 + b2.erlang.pdf(0.0) * 0.6
-    )
-    assert dist.cdf(0.0) == pytest.approx(0.0)
+        cov = m_mean[0, 0] - self.mean**2
+        return cov / self.var
