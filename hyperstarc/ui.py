@@ -6,8 +6,7 @@ from .erlang_handler import (er_fit_md_cange, er_max_phase_change,
 from .fit_handler import fit_click, fitter_change
 from .plot_handler import (bins_num_change, max_x_change, min_x_change,
                            replot_click)
-from .sam_handler import (sample_num_change, sample_percentage_change,
-                          upload_samples)
+from .sam_handler import (sample_num_change, upload_samples)
 
 page = gr.Blocks(title="HyperStarC")
 
@@ -20,7 +19,6 @@ with page:
             corr_plot = gr.Plot(label="Correlation", visible=False)
 
         with gr.Column(scale=1):
-            gr.Markdown("### Load Samples")
             load_btn = gr.UploadButton("Load Samples")
             bins_num = gr.Number(
                 value=config.hist_bins,
@@ -31,23 +29,9 @@ with page:
             )
             max_x = gr.Number(value=config.max_x, label="max x for plotting", interactive=True)
             min_x = gr.Number(value=config.min_x, label="min x for plotting", interactive=True)
+            sample_num = gr.Number(value=1000, label="number of samples for plotting", interactive=True)
             replot_btn = gr.Button("Replot")
-
-            gr.Markdown("### Number of Samples")
-            with gr.Tabs():
-                with gr.Tab("percentage"):
-                    sample_percentage = gr.Slider(
-                        0,
-                        100,
-                        value=100,
-                        label="percentage of samples",
-                        interactive=True,
-                    )
-                with gr.Tab("total number"):
-                    sample_num = gr.Number(
-                        value=1000, label="number of samples", interactive=True
-                    )
-
+            
             gr.Markdown("### Fitting Parameters")
             fitter_dropdown = gr.Dropdown(config.FITTER_NAMES, label="Distribution")
             with gr.Row() as exp_block:
@@ -81,7 +65,6 @@ with page:
     )
     load_btn.upload(fn=upload_samples, inputs=load_btn, outputs=(pdf_plot, cdf_plot))
     replot_btn.click(fn=replot_click, outputs=(pdf_plot, cdf_plot))
-    sample_percentage.change(fn=sample_percentage_change, inputs=sample_percentage)
     sample_num.change(fn=sample_num_change, inputs=sample_num)
     fit_btn.click(fn=fit_click, outputs=(pdf_plot, cdf_plot))
     er_fit_md.change(fn=er_fit_md_cange, inputs=er_fit_md)

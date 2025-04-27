@@ -5,7 +5,6 @@ from numpy.typing import NDArray
 # samples
 samples: NDArray | None = None
 selected_samples: NDArray | None = None
-sample_percent = 100
 total_sample = 1000
 
 

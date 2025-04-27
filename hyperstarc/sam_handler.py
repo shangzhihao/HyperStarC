@@ -47,8 +47,7 @@ def _read_samples(filepath: str) -> NDArray | None:
 
 def _select_sample(samples) -> NDArray:
     res = np.squeeze(samples)
-    num_sample = config.sample_percent * res.size / 100
-    num_sample = max(num_sample, config.total_sample)
+    num_sample = config.total_sample
     num_sample = min(num_sample, res.size)
 
     res = res[: int(num_sample)]
@@ -62,13 +61,4 @@ def sample_num_change(num: int):
     _select_sample(config.samples)
 
 
-# event handler for sample percentage
-def sample_percentage_change(num: int):
-    if num > 100:
-        num = 100
-        logger.warning("sample percentage must be less than 100")
-    if num < 1:
-        num = 1
-        logger.warning("sample percentage must be greater than 100")
-    config.sample_percent = num
-    _select_sample(config.samples)
+
