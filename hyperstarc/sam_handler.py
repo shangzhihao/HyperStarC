@@ -1,11 +1,9 @@
 # handlers for samples
 
-from ast import Tuple
 import logging
 from pathlib import Path
-
+import gradio as gr
 import numpy as np
-from matplotlib.figure import Figure
 from numpy.typing import NDArray
 
 from . import config
@@ -25,21 +23,21 @@ def upload_samples(filepath: str):
 def _read_samples(filepath: str) -> NDArray | None:
     if not Path(filepath).is_file():
         logging.error("file not found")
-        return None
+        raise gr.Error("file not found", duration=config.msg_duration)
     try:
         samples = np.squeeze(np.loadtxt(filepath))
     except (IOError, OSError) as e:
         logging.error(f"Error loading file: {e}")
-        return None
+        raise gr.Error("cannot loading", duration=config.msg_duration)
     except ValueError as e:
         logging.error(f"Error in file format: {e}")
-        return None
+        raise gr.Error("bad file format", duration=config.msg_duration)
     except Exception as e:
-        logging.error(f"An unexpected error occurred: {e}")
-        return None
+        raise gr.Error("errors in server", duration=config.msg_duration)
     if samples.ndim != 1:
         samples = samples[:, 0]
-        logger.warning("samples is not 1-dimentional, 1st column will be used")
+        logger.warning("samples is not 1-dimentional, the 1st column will be used")
+        gr.Warning("the 1st column will be used", duration=config.msg_duration)
     config.samples = samples
     selected_samples = _select_sample(samples)
     return selected_samples

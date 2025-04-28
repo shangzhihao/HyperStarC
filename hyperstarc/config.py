@@ -2,6 +2,8 @@ import enum
 
 from numpy.typing import NDArray
 
+
+msg_duration = 5
 # samples
 samples: NDArray | None = None
 selected_samples: NDArray | None = None
