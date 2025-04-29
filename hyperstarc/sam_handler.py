@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 import gradio as gr
+from matplotlib.figure import Figure
 import numpy as np
 from numpy.typing import NDArray
 
@@ -12,10 +13,10 @@ from .plot_handler import gen_hist, gen_sa_cdf
 logger = logging.getLogger(__name__)
 
 # upload samples and draw histogram
-def upload_samples(filepath: str):
+def upload_samples(filepath: str)->tuple[Figure, Figure]:
     samples = _read_samples(filepath)
     if samples is None:
-        return None
+        return config.no_fig, config.no_fig
     return gen_hist(samples), gen_sa_cdf(samples)
 
 
@@ -31,7 +32,8 @@ def _read_samples(filepath: str) -> NDArray | None:
         raise gr.Error("cannot loading", duration=config.msg_duration)
     except ValueError as e:
         logging.error(f"Error in file format: {e}")
-        raise gr.Error("bad file format", duration=config.msg_duration)
+        gr.Warning("bad file format", duration=config.msg_duration)
+        return None
     except Exception as e:
         raise gr.Error("errors in server", duration=config.msg_duration)
     if samples.ndim != 1:

@@ -1,3 +1,4 @@
+from ast import Tuple
 import logging
 
 import gradio as gr
@@ -13,14 +14,15 @@ logger = logging.getLogger(__name__)
 
 
 # event handler for fit button
-def fit_click():
-    no_figs = (None, None)
+def fit_click()->tuple[Figure, Figure]:
+    no_figs = (config.no_fig, config.no_fig)
     if config.selected_samples is None:
         logger.error("No samples loaded")
         return no_figs
     fitter = make_fitter()
     if fitter is None:
         logger.error("No fitter selected")
+        gr.Warning("No fitter selected")
         return no_figs
     dist = fitter.fit(config.selected_samples)
     pdf_fig = gen_hist(config.selected_samples)

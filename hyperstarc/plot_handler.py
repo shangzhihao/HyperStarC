@@ -9,12 +9,12 @@ from . import config
 
 logger = logging.getLogger(__name__)
 # generate a histogram of given samples
-def gen_hist(samples: NDArray|None) -> Figure|None:
+def gen_hist(samples: NDArray|None) -> Figure:
     if samples is None:
-        return None
+        return config.no_fig
     if not np.squeeze(samples).ndim == 1:
         logger.error("samples must be 1-dimentional")
-        return None
+        return config.no_fig
     fig, ax = plt.subplots()
     ax.hist(samples, bins=config.hist_bins, color="red", alpha=0.6, density=True)
     left, right = None, None
@@ -30,12 +30,12 @@ def gen_hist(samples: NDArray|None) -> Figure|None:
     return fig
 
 # draw cdf of given samples
-def gen_sa_cdf(samples: NDArray|None) -> Figure|None:
+def gen_sa_cdf(samples: NDArray|None) -> Figure:
     if samples is None:
-        return None
+        return config.no_fig
     if not np.squeeze(samples).ndim == 1:
         logger.error("samples must be 1-dimentional")
-        return None
+        return config.no_fig
     fig, ax = plt.subplots()
     x = np.sort(samples)
     total = samples.shape[0]
@@ -55,7 +55,7 @@ def gen_sa_cdf(samples: NDArray|None) -> Figure|None:
 # replot histogram, number of samples may change
 def replot_click():
     if config.samples is None:
-        return None
+        return None, None
     return gen_hist(config.selected_samples), gen_sa_cdf(config.selected_samples)
 
 # event handler for histogram bins

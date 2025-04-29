@@ -1,6 +1,7 @@
 import enum
 
 from numpy.typing import NDArray
+import matplotlib.pyplot as plt
 
 
 msg_duration = 5
@@ -9,6 +10,12 @@ samples: NDArray | None = None
 selected_samples: NDArray | None = None
 total_sample = 1000
 
+# plot
+no_fig, ax = plt.subplots()
+ax.text(0.5, 0.5, 'nothing to show', 
+        fontsize=20, 
+        ha='center',  # Horizontal alignment
+        va='center')
 
 # fitter
 class FITTERS(enum.Enum):
