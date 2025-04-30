@@ -6,21 +6,17 @@ import gradio as gr
 from matplotlib.figure import Figure
 import numpy as np
 from numpy.typing import NDArray
-
+from gradio import State
 from . import config
 from .plot_handler import gen_hist, gen_sa_cdf
+from .config import Parameters
 
 logger = logging.getLogger(__name__)
 
 # upload samples and draw histogram
-def upload_samples(filepath: str)->tuple[Figure, Figure]:
-    samples = _read_samples(filepath)
-    if samples is None:
-        return config.no_fig, config.no_fig
-    return gen_hist(samples), gen_sa_cdf(samples)
 
 
-# read samples from given file path and t
+# read samples from given file path
 def _read_samples(filepath: str) -> NDArray | None:
     if not Path(filepath).is_file():
         logging.error("file not found")
@@ -40,25 +36,36 @@ def _read_samples(filepath: str) -> NDArray | None:
         samples = samples[:, 0]
         logger.warning("samples is not 1-dimentional, the 1st column will be used")
         gr.Warning("the 1st column will be used", duration=config.msg_duration)
-    config.samples = samples
-    selected_samples = _select_sample(samples)
-    return selected_samples
+    return samples
 
 
-def _select_sample(samples) -> NDArray:
+def _select_sample(samples: NDArray | None, num: int) -> NDArray | None:
+    if samples is None:
+        return None
     res = np.squeeze(samples)
-    num_sample = config.total_sample
+    num_sample = num
     num_sample = min(num_sample, res.size)
-
     res = res[: int(num_sample)]
-    config.selected_samples = res
     return res
 
 
+def upload_samples(
+    filepath: str, params: Parameters
+) -> tuple[Figure, Figure, Parameters]:
+
+    samples = _read_samples(filepath)
+    if samples is None:
+        return config.no_fig, config.no_fig, params
+    samples_plot = _select_sample(samples, params.samples_plot_num)
+    if samples_plot is None:
+        return config.no_fig, config.no_fig, params
+    params.samples_all = samples
+    params.samples_plot = samples_plot
+    return gen_hist(samples), gen_sa_cdf(samples), params
+
+
 # event handler for sample number
-def sample_num_change(num: int):
-    config.total_sample = num
-    _select_sample(config.samples)
-
-
-
+def sample_num_change(num: int, params: Parameters) -> Parameters:
+    params.samples_plot_num = num
+    params.samples_plot = _select_sample(params.samples_all, num)
+    return params

@@ -1,12 +1,12 @@
-from ast import Tuple
 import logging
 
 import gradio as gr
-import matplotlib.pyplot as plt
+from gradio import State
 import numpy as np
 from matplotlib.figure import Figure
 
 from . import config
+from .config import Parameters
 from .fitters import ErlangFitter, ExponentialFitter, Fitter
 from .plot_handler import gen_hist, gen_sa_cdf
 
@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 # event handler for fit button
-def fit_click()->tuple[Figure, Figure]:
+def fit_click(params: State)->tuple[Figure, Figure]:
     no_figs = (config.no_fig, config.no_fig)
-    if config.selected_samples is None:
+    if params["sample.selected"] is None:
         logger.error("No samples loaded")
         return no_figs
-    fitter = make_fitter()
+    fitter = make_fitter(params)
     if fitter is None:
         logger.error("No fitter selected")
         gr.Warning("No fitter selected")
@@ -46,22 +46,22 @@ def fit_click()->tuple[Figure, Figure]:
 
 
 # Update ui based on selected fitter
-def fitter_change(fitter: str):
+def fitter_change(fitter: str, params: Parameters)->tuple[list, Parameters]:
     res = [gr.update(visible=False) for _ in config.FITTER_NAMES]
     if fitter not in config.FITTER_NAMES:
-        return res
+        return res, params
     idx = config.FITTER_NAMES.index(fitter)
     res[idx] = gr.update(visible=True)
-    config.selected_fitter = config.FITTERS(fitter)
-    return res
+    params.fitter_selected = config.FITTERS(fitter)
+    return res, params
 
 
 
 # generate fitter object based on selected fitter
-def make_fitter() -> Fitter | None:
-    if config.selected_fitter == config.FITTERS.Exponential:
+def make_fitter(params: State) -> Fitter | None:
+    if params["fitter.selected"] == config.FITTERS.Exponential:
         return ExponentialFitter()
-    if config.selected_fitter == config.FITTERS.Erlang:
+    if params["fitter.selected"] == config.FITTERS.Erlang:
         return ErlangFitter(
             method=config.erlang_method,
             rounding=config.eralng_rounding,

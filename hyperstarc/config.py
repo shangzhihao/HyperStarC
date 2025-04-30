@@ -4,18 +4,21 @@ from numpy.typing import NDArray
 import matplotlib.pyplot as plt
 
 
+from dataclasses import dataclass
+
 msg_duration = 5
-# samples
-samples: NDArray | None = None
-selected_samples: NDArray | None = None
-total_sample = 1000
 
 # plot
 no_fig, ax = plt.subplots()
-ax.text(0.5, 0.5, 'nothing to show', 
-        fontsize=20, 
-        ha='center',  # Horizontal alignment
-        va='center')
+ax.text(
+    0.5,
+    0.5,
+    "nothing to show",
+    fontsize=20,
+    ha="center",  # Horizontal alignment
+    va="center",
+)
+
 
 # fitter
 class FITTERS(enum.Enum):
@@ -26,20 +29,15 @@ class FITTERS(enum.Enum):
 
 
 FITTER_NAMES = [dist.name for dist in FITTERS]
-selected_fitter = FITTERS.Exponential
-
-# draw
-hist_bins = 200
-max_bins = 1000
-min_bins = 50
-max_x = 0
-min_x = 0
 
 
 # erlang parameters
 class ERMD(enum.Enum):
     MLE = "mle"
     MOM = "mom"
+
+
+ERMD_NAMES = [method.name for method in ERMD]
 
 
 class ROUNDING(enum.Enum):
@@ -49,8 +47,22 @@ class ROUNDING(enum.Enum):
 
 
 RUNDING_NAMES = [rounding.name for rounding in ROUNDING]
-ERMD_NAMES = [method.name for method in ERMD]
 
-erlang_max_phase = 1000
-erlang_method: ERMD = ERMD.MLE
-eralng_rounding: ROUNDING = ROUNDING.round
+
+@dataclass
+class Parameters:
+    samples_all: NDArray | None = None
+    samples_plot: NDArray | None = None
+    samples_plot_num: int = 1000
+
+    draw_hist_bins: int = 200
+    draw_max_bins: int = 1000
+    draw_min_bins: int = 50
+    draw_max_x: int = 0
+    draw_min_x: int = 0
+
+    erlang_max_phase: int = 1000
+    erlang_method: ERMD = ERMD.MLE
+    erlang_rounding: ROUNDING = ROUNDING.round
+
+    fitter_selected: FITTERS = FITTERS.Exponential

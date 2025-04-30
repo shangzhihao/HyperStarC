@@ -1,16 +1,21 @@
 import gradio as gr
 
 from . import config
-from .erlang_handler import (er_fit_md_cange, er_max_phase_change,
+from .config import ERMD, FITTERS, ROUNDING, Parameters
+from .erlang_handler import (er_fit_md_change, er_max_phase_change,
                              er_round_change)
 from .fit_handler import fit_click, fitter_change
 from .plot_handler import (bins_num_change, max_x_change, min_x_change,
                            replot_click)
 from .sam_handler import (sample_num_change, upload_samples)
+from numpy.typing import NDArray
+
 
 page = gr.Blocks(title="HyperStarC")
 
 with page:
+    default_params = Parameters()
+    params = gr.State(default_params)
     gr.Markdown("## HyperStarC")
     with gr.Row():
         with gr.Column(scale=3):
@@ -21,14 +26,14 @@ with page:
         with gr.Column(scale=1):
             load_btn = gr.UploadButton("Load Samples")
             bins_num = gr.Number(
-                value=config.hist_bins,
+                value = params.draw_hist_bins,
                 label="number of bins",
                 interactive=True,
-                maximum=config.max_bins,
-                minimum=config.min_bins,
+                maximum=params.draw_max_bins,
+                minimum=params.draw_min_bins,
             )
-            max_x = gr.Number(value=config.max_x, label="max x for plotting", interactive=True)
-            min_x = gr.Number(value=config.min_x, label="min x for plotting", interactive=True)
+            max_x = gr.Number(value=params.draw_max_x, label="max x for plotting", interactive=True)
+            min_x = gr.Number(value=params.draw_min_x, label="min x for plotting", interactive=True)
             sample_num = gr.Number(value=1000, label="number of samples for plotting", interactive=True)
             replot_btn = gr.Button("Replot")
             
@@ -60,16 +65,21 @@ with page:
     # set event handlers
     fitter_dropdown.change(
         fn=fitter_change,
-        inputs=[fitter_dropdown],
-        outputs=[exp_block, erlang_block, hyper_block, map_block],
+        inputs=[fitter_dropdown, params],
+        outputs=[exp_block, erlang_block, hyper_block, map_block, params],
     )
-    load_btn.upload(fn=upload_samples, inputs=load_btn, outputs=(pdf_plot, cdf_plot))
-    replot_btn.click(fn=replot_click, outputs=(pdf_plot, cdf_plot))
-    sample_num.change(fn=sample_num_change, inputs=sample_num)
-    fit_btn.click(fn=fit_click, outputs=(pdf_plot, cdf_plot))
-    er_fit_md.change(fn=er_fit_md_cange, inputs=er_fit_md)
-    er_round.change(fn=er_round_change, inputs=er_round)
-    er_max_phase.change(fn=er_max_phase_change, inputs=er_max_phase)
-    bins_num.change(fn=bins_num_change, inputs=bins_num)
-    max_x.change(fn=max_x_change, inputs=max_x)
-    min_x.change(fn=min_x_change, inputs=min_x)
+
+    sample_num.change(fn=sample_num_change, inputs=[sample_num, params], outputs=params)
+
+    load_btn.upload(fn=upload_samples, inputs=[load_btn, params], outputs=(pdf_plot, cdf_plot))
+    replot_btn.click(fn=replot_click, inputs=[params], outputs=(pdf_plot, cdf_plot))
+    fit_btn.click(fn=fit_click, inputs=[params], outputs=(pdf_plot, cdf_plot))
+
+
+    er_fit_md.change(fn=er_fit_md_change, inputs=[er_fit_md, params], outputs=params)
+    er_round.change(fn=er_round_change, inputs=[er_round, params], outputs=params)
+    er_max_phase.change(fn=er_max_phase_change, inputs=[er_max_phase, params], outputs=params)
+
+    bins_num.change(fn=bins_num_change, inputs=[bins_num, params], outputs=params)
+    max_x.change(fn=max_x_change, inputs=[max_x, params], outputs=params)
+    min_x.change(fn=min_x_change, inputs=[min_x, params], outputs=params)

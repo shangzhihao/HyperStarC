@@ -1,5 +1,6 @@
 import logging
 
+from gradio import State
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
@@ -53,19 +54,23 @@ def gen_sa_cdf(samples: NDArray|None) -> Figure:
     return fig
 
 # replot histogram, number of samples may change
-def replot_click():
-    if config.samples is None:
+def replot_click(params: State):
+    samples = params["sample.selected"]
+    if samples is None:
         return None, None
-    return gen_hist(config.selected_samples), gen_sa_cdf(config.selected_samples)
+    return gen_hist(samples), gen_sa_cdf(samples)
 
 # event handler for histogram bins
-def bins_num_change(num):
-    config.hist_bins = num
+def bins_num_change(num:int, params:State)->State:
+    params["draw.hist_bins"] = num
+    return params
 
 # event handler for max x in plotting
-def max_x_change(num):
-    config.max_x = num
+def max_x_change(num:int, params:State)->State:
+    params["draw.max_x"] = num
+    return params
 
 # event handler for min x in plotting
-def min_x_change(num):
-    config.min_x = num
+def min_x_change(num:int, params:State)->State:
+    params["draw.min_x"] = num
+    return params
