@@ -61,7 +61,7 @@ def upload_samples(
         return config.no_fig, config.no_fig, params
     params.samples_all = samples
     params.samples_plot = samples_plot
-    return gen_hist(samples), gen_sa_cdf(samples), params
+    return gen_hist(samples, params), gen_sa_cdf(samples, params), params
 
 
 # event handler for sample number

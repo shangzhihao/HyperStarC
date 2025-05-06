@@ -58,14 +58,14 @@ def fitter_change(fitter: str, params: Parameters)->tuple[list, Parameters]:
 
 
 # generate fitter object based on selected fitter
-def make_fitter(params: State) -> Fitter | None:
-    if params["fitter.selected"] == config.FITTERS.Exponential:
+def make_fitter(params: Parameters) -> Fitter | None:
+    if params.fitter_selected == config.FITTERS.Exponential:
         return ExponentialFitter()
-    if params["fitter.selected"] == config.FITTERS.Erlang:
+    if params.fitter_selected == config.FITTERS.Erlang:
         return ErlangFitter(
-            method=config.erlang_method,
-            rounding=config.eralng_rounding,
-            max_phase=config.erlang_max_phase,
+            method=params.erlang_method,
+            rounding=params.erlang_rounding,
+            max_phase=params.erlang_max_phase,
         )
     return None
 

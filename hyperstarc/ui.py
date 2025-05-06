@@ -26,14 +26,14 @@ with page:
         with gr.Column(scale=1):
             load_btn = gr.UploadButton("Load Samples")
             bins_num = gr.Number(
-                value = params.draw_hist_bins,
+                value = params.value.draw_hist_bins,
                 label="number of bins",
                 interactive=True,
-                maximum=params.draw_max_bins,
-                minimum=params.draw_min_bins,
+                maximum=params.value.draw_max_bins,
+                minimum=params.value.draw_min_bins,
             )
-            max_x = gr.Number(value=params.draw_max_x, label="max x for plotting", interactive=True)
-            min_x = gr.Number(value=params.draw_min_x, label="min x for plotting", interactive=True)
+            max_x = gr.Number(value=params.value.draw_max_x, label="max x for plotting", interactive=True)
+            min_x = gr.Number(value=params.value.draw_min_x, label="min x for plotting", interactive=True)
             sample_num = gr.Number(value=1000, label="number of samples for plotting", interactive=True)
             replot_btn = gr.Button("Replot")
             
@@ -71,7 +71,7 @@ with page:
 
     sample_num.change(fn=sample_num_change, inputs=[sample_num, params], outputs=params)
 
-    load_btn.upload(fn=upload_samples, inputs=[load_btn, params], outputs=(pdf_plot, cdf_plot))
+    load_btn.upload(fn=upload_samples, inputs=[load_btn, params], outputs=(pdf_plot, cdf_plot, params))
     replot_btn.click(fn=replot_click, inputs=[params], outputs=(pdf_plot, cdf_plot))
     fit_btn.click(fn=fit_click, inputs=[params], outputs=(pdf_plot, cdf_plot))
 
