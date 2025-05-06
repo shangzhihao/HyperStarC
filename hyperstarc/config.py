@@ -33,8 +33,8 @@ FITTER_NAMES = [dist.name for dist in FITTERS]
 
 # erlang parameters
 class ERMD(enum.Enum):
-    MLE = "mle"
-    MOM = "mom"
+    MLE = "MLE"
+    MOM = "MOM"
 
 
 ERMD_NAMES = [method.name for method in ERMD]
