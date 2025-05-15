@@ -1,10 +1,8 @@
 import enum
-
-from numpy.typing import NDArray
-import matplotlib.pyplot as plt
-
-
 from dataclasses import dataclass
+
+import matplotlib.pyplot as plt
+from numpy.typing import NDArray
 
 msg_duration = 5
 
@@ -64,5 +62,10 @@ class Parameters:
     erlang_max_phase: int = 1000
     erlang_method: ERMD = ERMD.MLE
     erlang_rounding: ROUNDING = ROUNDING.round
+
+    herlang_peaks: int = 2
+    herlang_max_phase: int = 1000
+    herlang_method: ERMD = ERMD.MLE
+    herlang_rounding: ROUNDING = ROUNDING.round
 
     fitter_selected: FITTERS = FITTERS.Exponential

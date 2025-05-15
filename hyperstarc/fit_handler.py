@@ -1,13 +1,12 @@
 import logging
 
 import gradio as gr
-from gradio import State
 import numpy as np
 from matplotlib.figure import Figure
 
 from . import config
 from .config import Parameters
-from .fitters import ErlangFitter, ExponentialFitter, Fitter
+from .fitters import ErlangFitter, ExponentialFitter, Fitter, HyperErlangFitter
 from .plot_handler import gen_hist, gen_sa_cdf
 
 logger = logging.getLogger(__name__)
@@ -73,5 +72,7 @@ def make_fitter(params: Parameters) -> Fitter | None:
             rounding=params.erlang_rounding,
             max_phase=params.erlang_max_phase,
         )
+    if params.fitter_selected == config.FITTERS.HyperErlang:
+        return HyperErlangFitter()
     return None
 

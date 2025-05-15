@@ -2,14 +2,15 @@
 
 import logging
 from pathlib import Path
+
 import gradio as gr
-from matplotlib.figure import Figure
 import numpy as np
+from matplotlib.figure import Figure
 from numpy.typing import NDArray
-from gradio import State
+
 from . import config
-from .plot_handler import gen_hist, gen_sa_cdf
 from .config import Parameters
+from .plot_handler import gen_hist, gen_sa_cdf
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ def _read_samples(filepath: str) -> NDArray | None:
         logging.error(f"Error in file format: {e}")
         gr.Warning("bad file format", duration=config.msg_duration)
         return None
-    except Exception as e:
+    except Exception:
         raise gr.Error("errors in server", duration=config.msg_duration)
     if samples.ndim != 1:
         samples = samples[:, 0]

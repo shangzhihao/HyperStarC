@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.signal import find_peaks
+from sklearn.cluster import KMeans
 
 from .config import ERMD, ROUNDING
 from .dist import AbcPhDist, Erlang, Exponential
@@ -107,7 +109,11 @@ class HyperErlangFitter(Fitter):
         super().__init__()
 
     def _fit(self, samples: NDArray) -> AbcPhDist:
-        pass
+        sam_2d = samples.reshape(-1, 1)
+        kmeans = KMeans(n_clusters=3, random_state=42)
+        kmeans.fit(sam_2d)
+
+        print(123)
 
 
 class MAPFitter(Fitter):

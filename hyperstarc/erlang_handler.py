@@ -1,9 +1,8 @@
 import logging
 
-from gradio import State
-from .config import Parameters
 
 from . import config
+from .config import Parameters
 
 logger = logging.getLogger(__name__)
 # event handler for erlang fit method

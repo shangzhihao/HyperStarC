@@ -1,15 +1,13 @@
 import gradio as gr
 
 from . import config
-from .config import ERMD, FITTERS, ROUNDING, Parameters
+from .config import Parameters
 from .erlang_handler import (er_fit_md_change, er_max_phase_change,
                              er_round_change)
 from .fit_handler import fit_click, fitter_change
 from .plot_handler import (bins_num_change, max_x_change, min_x_change,
                            replot_click)
-from .sam_handler import (sample_num_change, upload_samples)
-from numpy.typing import NDArray
-
+from .sam_handler import sample_num_change, upload_samples
 
 page = gr.Blocks(title="HyperStarC")
 
@@ -52,7 +50,18 @@ with page:
                     value=1000, label="max phase", interactive=True
                 )
             with gr.Row(visible=False) as hyper_block:
-                gr.Markdown("hyper block")
+                her_max_phase = gr.Number(
+                    value=2, label="peaks", interactive=True
+                )
+                her_fit_md = gr.Dropdown(
+                    config.ERMD_NAMES, label="method", interactive=True
+                )
+                her_round = gr.Dropdown(
+                    config.RUNDING_NAMES, label="rounding", interactive=True
+                )
+                her_max_phase = gr.Number(
+                    value=1000, label="max phase", interactive=True
+                )
             with gr.Row(visible=False) as map_block:
                 branch = gr.Number(value=2, label="branch")
                 reassignment = gr.Number(value=10, label="reassignment")

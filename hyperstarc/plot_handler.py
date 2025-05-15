@@ -1,11 +1,9 @@
 import logging
 
-from gradio import State
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 from numpy.typing import NDArray
-from pytest import param
 
 from . import config
 from .config import Parameters
