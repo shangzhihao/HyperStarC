@@ -71,3 +71,5 @@ class Parameters:
     herlang_rounding: ROUNDING = ROUNDING.round
 
     fitter_selected: FITTERS = FITTERS.Exponential
+
+default_param = Parameters()

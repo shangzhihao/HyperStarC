@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.signal import find_peaks
 from sklearn.cluster import KMeans
 
 from .config import ERMD, ROUNDING
-from .dist import AbcPhDist, Erlang, Exponential
+from .dist import AbcPhDist, Erlang, Exponential, HyperErlang, HyperErlangBranch
+from . import config
 
 
 class Fitter(ABC):
@@ -38,7 +38,7 @@ class ErlangFitter(Fitter):
         self,
         method: ERMD = ERMD.MLE,
         rounding: ROUNDING = ROUNDING.round,
-        max_phase=1000,
+        max_phase=config.default_param.erlang_max_phase,
     ) -> None:
         super().__init__()
         self.method = method
@@ -105,16 +105,37 @@ class ErlangFitter(Fitter):
 
 
 class HyperErlangFitter(Fitter):
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        peaks: int = config.default_param.herlang_peaks,
+        method: ERMD = ERMD.MLE,
+        rounding: ROUNDING = ROUNDING.round,
+        max_phase=config.default_param.herlang_max_phase,
+    ) -> None:
         super().__init__()
+        self.peaks = peaks
+        self.method = method
+        self.rounding = rounding
+        self.max_phase = max_phase
+        self.erlang_fitter = ErlangFitter(
+            method=self.method,
+            rounding=self.rounding,
+            max_phase=self.max_phase,)
 
     def _fit(self, samples: NDArray) -> AbcPhDist:
+        n_clusters = self.peaks
         sam_2d = samples.reshape(-1, 1)
-        kmeans = KMeans(n_clusters=3, random_state=42)
+        kmeans = KMeans(n_clusters=n_clusters)
         kmeans.fit(sam_2d)
-
-        print(123)
-
+        erlang_branches = []
+        for i in range(n_clusters):
+            cluster_i = sam_2d[kmeans.labels_ == i]
+            cluster_i = cluster_i.reshape(-1)
+            erlang_dist = self.erlang_fitter.fit(cluster_i)
+            prob = cluster_i.size / samples.size
+            branch = HyperErlangBranch(erlang_dist, prob=prob)
+            erlang_branches.append(branch)
+        return HyperErlang(erlang_branches)
 
 class MAPFitter(Fitter):
     def __init__(self) -> None:

@@ -73,6 +73,10 @@ def make_fitter(params: Parameters) -> Fitter | None:
             max_phase=params.erlang_max_phase,
         )
     if params.fitter_selected == config.FITTERS.HyperErlang:
-        return HyperErlangFitter()
+        return HyperErlangFitter(
+            peaks=params.herlang_peaks,
+            method=params.herlang_method,
+            rounding=params.herlang_rounding,
+            max_phase=params.herlang_max_phase,)
     return None
 

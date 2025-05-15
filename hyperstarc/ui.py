@@ -48,11 +48,11 @@ with page:
                     config.RUNDING_NAMES, label="rounding", interactive=True
                 )
                 er_max_phase = gr.Number(
-                    value=1000, label="max phase", interactive=True
+                    value=config.default_param.erlang_max_phase, label="max phase", interactive=True
                 )
             with gr.Row(visible=False) as hyper_block:
                 her_peaks = gr.Number(
-                    value=2, label="peaks", interactive=True
+                    value=config.default_param.herlang_peaks, label="peaks", interactive=True
                 )
                 her_fit_md = gr.Dropdown(
                     config.ERMD_NAMES, label="method", interactive=True
@@ -61,13 +61,10 @@ with page:
                     config.RUNDING_NAMES, label="rounding", interactive=True
                 )
                 her_max_phase = gr.Number(
-                    value=1000, label="max phase", interactive=True
+                    value=config.default_param.herlang_max_phase, label="max phase", interactive=True
                 )
             with gr.Row(visible=False) as map_block:
-                branch = gr.Number(value=2, label="branch")
-                reassignment = gr.Number(value=10, label="reassignment")
-                queue_opt = gr.Number(value=5, label="queue optimize")
-                shuffles = gr.Number(value=2, label="shuffles")
+                gr.Markdown("## map block")
             with gr.Row(visible=True) as fitter_block:
                 fit_btn = gr.Button("Fit")
                 export_btn = gr.Button("Export")
