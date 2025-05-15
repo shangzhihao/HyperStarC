@@ -4,6 +4,7 @@ from . import config
 from .config import Parameters
 from .erlang_handler import (er_fit_md_change, er_max_phase_change,
                              er_round_change)
+from .herlang_handler import (her_fit_md_change, her_max_phase_change, her_peaks_change, her_round_change)
 from .fit_handler import fit_click, fitter_change
 from .plot_handler import (bins_num_change, max_x_change, min_x_change,
                            replot_click)
@@ -50,7 +51,7 @@ with page:
                     value=1000, label="max phase", interactive=True
                 )
             with gr.Row(visible=False) as hyper_block:
-                her_max_phase = gr.Number(
+                her_peaks = gr.Number(
                     value=2, label="peaks", interactive=True
                 )
                 her_fit_md = gr.Dropdown(
@@ -88,6 +89,11 @@ with page:
     er_fit_md.change(fn=er_fit_md_change, inputs=[er_fit_md, params], outputs=params)
     er_round.change(fn=er_round_change, inputs=[er_round, params], outputs=params)
     er_max_phase.change(fn=er_max_phase_change, inputs=[er_max_phase, params], outputs=params)
+
+    her_peaks.change(fn=her_peaks_change, inputs=[her_peaks, params], outputs=params)
+    her_fit_md.change(fn=her_fit_md_change, inputs=[her_fit_md, params], outputs=params)
+    her_round.change(fn=her_round_change, inputs=[her_round, params], outputs=params)
+    her_max_phase.change(fn=her_max_phase_change, inputs=[her_max_phase, params], outputs=params)
 
     bins_num.change(fn=bins_num_change, inputs=[bins_num, params], outputs=params)
     max_x.change(fn=max_x_change, inputs=[max_x, params], outputs=params)

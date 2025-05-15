@@ -1,9 +1,11 @@
 import enum
 from dataclasses import dataclass
+import logging
 
 import matplotlib.pyplot as plt
 from numpy.typing import NDArray
 
+LOG_LEVEL = logging.DEBUG
 msg_duration = 5
 
 # plot
