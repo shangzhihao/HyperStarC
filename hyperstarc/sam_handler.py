@@ -46,6 +46,7 @@ def _select_sample(samples: NDArray | None, num: int) -> NDArray | None:
     res = np.squeeze(samples)
     num_sample = num
     num_sample = min(num_sample, res.size)
+    np.random.shuffle(res)
     res = res[: int(num_sample)]
     return res
 
