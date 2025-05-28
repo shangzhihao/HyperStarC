@@ -1,6 +1,6 @@
 import enum
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 
 import matplotlib.pyplot as plt
 from numpy.typing import NDArray
@@ -70,6 +70,12 @@ class Parameters:
     herlang_method: ERMD = ERMD.MLE
     herlang_rounding: ROUNDING = ROUNDING.round
 
+    map_peaks: int = 2
+    map_max_phase: int = 1000
+    map_method: ERMD = ERMD.MLE
+    map_rounding: ROUNDING = ROUNDING.round
+
     fitter_selected: FITTERS = FITTERS.Exponential
+
 
 default_param = Parameters()

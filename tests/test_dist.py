@@ -2,8 +2,7 @@ import numpy as np
 import pytest
 from scipy.stats import erlang
 
-from hyperstarc.dist import (MAP, Erlang, Exponential, HyperErlang,
-                             HyperErlangBranch)
+from hyperstarc.dist import MAP, Erlang, Exponential, HyperErlang, HyperErlangBranch
 
 
 def test_exponential():

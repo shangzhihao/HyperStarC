@@ -54,7 +54,6 @@ def _select_sample(samples: NDArray | None, num: int) -> NDArray | None:
 def upload_samples(
     filepath: str, params: Parameters
 ) -> tuple[Figure, Figure, Parameters]:
-
     samples = _read_samples(filepath)
     if samples is None:
         return config.no_fig, config.no_fig, params

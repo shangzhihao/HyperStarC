@@ -10,8 +10,9 @@ from .config import Parameters
 
 logger = logging.getLogger(__name__)
 
+
 # generate a histogram of given samples
-def gen_hist(samples: NDArray|None, params: Parameters) -> Figure:
+def gen_hist(samples: NDArray | None, params: Parameters) -> Figure:
     if samples is None:
         return config.no_fig
     if not np.squeeze(samples).ndim == 1:
@@ -31,8 +32,9 @@ def gen_hist(samples: NDArray|None, params: Parameters) -> Figure:
     plt.tight_layout()
     return fig
 
+
 # draw cdf of given samples
-def gen_sa_cdf(samples: NDArray|None, params: Parameters) -> Figure:
+def gen_sa_cdf(samples: NDArray | None, params: Parameters) -> Figure:
     if samples is None:
         return config.no_fig
     if not np.squeeze(samples).ndim == 1:
@@ -41,7 +43,7 @@ def gen_sa_cdf(samples: NDArray|None, params: Parameters) -> Figure:
     fig, ax = plt.subplots()
     x = np.sort(samples)
     total = samples.shape[0]
-    y = [i/total for i in range(total)]
+    y = [i / total for i in range(total)]
     ax.plot(x, y, color="red", alpha=0.6)
     left, right = None, None
     if params.draw_min_x != 0:
@@ -54,24 +56,28 @@ def gen_sa_cdf(samples: NDArray|None, params: Parameters) -> Figure:
     plt.tight_layout()
     return fig
 
+
 # replot histogram, number of samples may change
-def replot_click(params: Parameters)->tuple[Figure, Figure]:
+def replot_click(params: Parameters) -> tuple[Figure, Figure]:
     samples = params.samples_plot
     if samples is None:
         return config.no_fig, config.no_fig
     return gen_hist(samples, params), gen_sa_cdf(samples, params)
 
+
 # event handler for histogram bins
-def bins_num_change(num:int, params:Parameters)->Parameters:
+def bins_num_change(num: int, params: Parameters) -> Parameters:
     params.draw_hist_bins = num
     return params
 
+
 # event handler for max x in plotting
-def max_x_change(num:int, params:Parameters)->Parameters:
+def max_x_change(num: int, params: Parameters) -> Parameters:
     params.draw_max_x = num
     return params
 
+
 # event handler for min x in plotting
-def min_x_change(num:int, params:Parameters)->Parameters:
+def min_x_change(num: int, params: Parameters) -> Parameters:
     params.draw_min_x = num
     return params

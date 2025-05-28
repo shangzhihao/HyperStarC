@@ -4,9 +4,9 @@ import numpy as np
 from numpy.typing import NDArray
 from sklearn.cluster import KMeans
 
+from . import config
 from .config import ERMD, ROUNDING
 from .dist import AbcPhDist, Erlang, Exponential, HyperErlang, HyperErlangBranch
-from . import config
 
 
 class Fitter(ABC):
@@ -120,7 +120,8 @@ class HyperErlangFitter(Fitter):
         self.erlang_fitter = ErlangFitter(
             method=self.method,
             rounding=self.rounding,
-            max_phase=self.max_phase,)
+            max_phase=self.max_phase,
+        )
 
     def _fit(self, samples: NDArray) -> AbcPhDist:
         n_clusters = self.peaks
@@ -136,6 +137,7 @@ class HyperErlangFitter(Fitter):
             branch = HyperErlangBranch(erlang_dist, prob=prob)
             erlang_branches.append(branch)
         return HyperErlang(erlang_branches)
+
 
 class MAPFitter(Fitter):
     def __init__(self) -> None:

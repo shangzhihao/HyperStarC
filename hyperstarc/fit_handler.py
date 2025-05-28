@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 # event handler for fit button
-def fit_click(params: Parameters)->tuple[Figure, Figure]:
+def fit_click(params: Parameters) -> tuple[Figure, Figure]:
     no_figs = (config.no_fig, config.no_fig)
     if params.samples_all is None:
         logger.error("No samples loaded")
@@ -49,7 +49,7 @@ def fit_click(params: Parameters)->tuple[Figure, Figure]:
 
 
 # Update ui based on selected fitter
-def fitter_change(fitter: str, params: Parameters)->list:
+def fitter_change(fitter: str, params: Parameters) -> list:
     res = [gr.update(visible=False) for _ in config.FITTER_NAMES]
     if fitter not in config.FITTER_NAMES:
         res.append(params)
@@ -59,7 +59,6 @@ def fitter_change(fitter: str, params: Parameters)->list:
     params.fitter_selected = config.FITTERS(fitter)
     res.append(params)
     return res
-
 
 
 # generate fitter object based on selected fitter
@@ -77,6 +76,6 @@ def make_fitter(params: Parameters) -> Fitter | None:
             peaks=params.herlang_peaks,
             method=params.herlang_method,
             rounding=params.herlang_rounding,
-            max_phase=params.herlang_max_phase,)
+            max_phase=params.herlang_max_phase,
+        )
     return None
-
