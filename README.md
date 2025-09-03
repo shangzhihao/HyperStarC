@@ -1,5 +1,7 @@
 # HyperStarC
 
+> **⚠️ Maintenance Notice**: This project is not actively maintained. While the code is functional and can be used as-is, users should expect limited support, infrequent updates, and potential compatibility issues with newer dependencies.
+
 A statistical modeling tool for fitting time series data into phase-type distributions, specifically exponential, Erlang, and hyper-Erlang distributions. This tool is designed for performance evaluation of computer systems, networks, and queuing systems.
 
 ## Overview
@@ -33,22 +35,6 @@ cd HyperStarC
 pip install -e .
 ```
 
-### Development Installation
-
-For development with additional tools:
-
-```bash
-# Install with development dependencies
-pip install -e ".[dev]"
-```
-
-This includes:
-- `black` - Code formatting
-- `isort` - Import sorting
-- `mypy` - Type checking
-- `pytest` - Testing framework
-- `ipython` - Enhanced Python shell
-
 ## Usage
 
 ### Running the Application
@@ -58,6 +44,8 @@ python -m hyperstarc.main
 ```
 
 This will launch a web interface accessible at `http://localhost:7860` (default Gradio port).
+
+![HyperStarC UI](ui.png)
 
 ### Using the Web Interface
 
@@ -78,7 +66,7 @@ This will launch a web interface accessible at `http://localhost:7860` (default 
 The `samples/` directory contains example datasets:
 
 - `exp_samples.txt` - Exponential distribution samples
-- `gamma_samples.txt` - Gamma distribution samples 
+- `gamma_samples.txt` - Gamma/Erlang distribution samples 
 - `her.txt` - Hyper-Erlang distribution samples
 
 The datasets are generated using the python script in the `samples/` directory.
@@ -99,11 +87,11 @@ The datasets are generated using the python script in the `samples/` directory.
 - ✅ Hyper-Erlang distribution fitting
 - ✅ Interactive web interface
 - ✅ PDF/CDF visualization
+- ✅ Export functionality
 
 ### In Development
 - 🚧 Markov Arrival Process (MAP) fitting
 - 🚧 Enhanced correlation analysis
-- 🚧 Export functionality
 
 ## References
 

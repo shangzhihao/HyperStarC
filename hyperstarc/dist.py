@@ -47,6 +47,13 @@ class AbcPhDist(ABC):
         llh = map(math.log, lh)
         return math.prod(llh)
 
+    @abstractmethod
+    def __repr__(self) -> str:
+        pass
+
+    def __str__(self) -> str:
+        return self.__repr__()
+
 
 class Exponential(AbcPhDist):
     def __init__(self, rate: float) -> None:
@@ -71,6 +78,8 @@ class Exponential(AbcPhDist):
         res = 1 - math.exp(-self.rate * x)
         return res * (x >= 0)
 
+    def __repr__(self) -> str:
+        return f"Exponential(rate={self.rate})"
 
 # erlang distribution with phase parameter and rate parameter
 # peak = (phase-1)*rate
@@ -120,6 +129,9 @@ class Erlang(AbcPhDist):
             res[i, i + 1] = self.rate
         res[self.phase - 1, self.phase - 1] = -self.rate
         return res
+    
+    def __repr__(self) -> str:
+        return f"Erlang(rate={self.rate}, phase={self.phase})"
 
 
 class HyperErlangBranch:
@@ -129,6 +141,8 @@ class HyperErlangBranch:
         self.erlang = dist
         self.prob = prob
         super().__init__()
+    def __repr__(self) -> str:
+        return f"HyperErlangBranch(dist={self.erlang}, prob={self.prob})"
 
 
 # Hyper-Erlang distribution
@@ -199,6 +213,9 @@ class HyperErlang(AbcPhDist):
             temp = temp / math.factorial(i)
             res = res + temp
         return res * branch.prob
+    
+    def __repr__(self) -> str:
+        return f"HyperErlang(\n{[str(branch)+"\n" for branch in self.branches]})"
 
 
 class MAP(AbcPhDist):

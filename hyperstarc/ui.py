@@ -5,7 +5,7 @@ from .config import Parameters
 from .erlang_handler import (er_fit_md_change, er_max_phase_change,
                              er_round_change)
 from .herlang_handler import (her_fit_md_change, her_max_phase_change, her_peaks_change, her_round_change)
-from .fit_handler import fit_click, fitter_change
+from .fit_handler import fit_click, fitter_change, export_click
 from .plot_handler import (bins_num_change, max_x_change, min_x_change,
                            replot_click)
 from .sam_handler import sample_num_change, upload_samples
@@ -66,6 +66,7 @@ with page:
             with gr.Row(visible=False) as map_block:
                 gr.Markdown("## map block")
             with gr.Row(visible=True) as fitter_block:
+                dl_file = gr.File(label="Download result")
                 fit_btn = gr.Button("Fit")
                 export_btn = gr.Button("Export")
 
@@ -80,7 +81,7 @@ with page:
 
     load_btn.upload(fn=upload_samples, inputs=[load_btn, params], outputs=(pdf_plot, cdf_plot, params))
     replot_btn.click(fn=replot_click, inputs=[params], outputs=(pdf_plot, cdf_plot))
-    fit_btn.click(fn=fit_click, inputs=[params], outputs=(pdf_plot, cdf_plot))
+    fit_btn.click(fn=fit_click, inputs=[params], outputs=(pdf_plot, cdf_plot, params))
 
 
     er_fit_md.change(fn=er_fit_md_change, inputs=[er_fit_md, params], outputs=params)
@@ -95,3 +96,5 @@ with page:
     bins_num.change(fn=bins_num_change, inputs=[bins_num, params], outputs=params)
     max_x.change(fn=max_x_change, inputs=[max_x, params], outputs=params)
     min_x.change(fn=min_x_change, inputs=[min_x, params], outputs=params)
+
+    export_btn.click(fn=export_click, inputs=[params], outputs=dl_file)

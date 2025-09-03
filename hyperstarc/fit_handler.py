@@ -3,6 +3,8 @@ import logging
 import gradio as gr
 import numpy as np
 from matplotlib.figure import Figure
+import tempfile
+from pathlib import Path
 
 from . import config
 from .config import Parameters
@@ -11,10 +13,24 @@ from .plot_handler import gen_hist, gen_sa_cdf
 
 logger = logging.getLogger(__name__)
 
+def _make_dist_file(dist_str: str) -> str:
+    # create a temp .txt file and return its path
+    tmp_dir = Path(tempfile.mkdtemp())
+    fname = dist_str.split("(")[0]
+    fpath = tmp_dir / f"{fname}.txt"
+    fpath.write_text(dist_str, encoding="utf-8")
+    return str(fpath)
+# event handler for export button
+def export_click(params: Parameters)->str:
+    if params.dist is None:
+        logger.error("No distribution fitted")
+        return "No distribution fitted"
+    dist_str = str(params.dist)
+    return _make_dist_file(dist_str)
 
 # event handler for fit button
-def fit_click(params: Parameters)->tuple[Figure, Figure]:
-    no_figs = (config.no_fig, config.no_fig)
+def fit_click(params: Parameters)->tuple[Figure, Figure, Parameters]:
+    no_figs = (config.no_fig, config.no_fig, params)
     if params.samples_all is None:
         logger.error("No samples loaded")
         return no_figs
@@ -23,7 +39,9 @@ def fit_click(params: Parameters)->tuple[Figure, Figure]:
         logger.error("No fitter selected")
         gr.Warning("No fitter selected")
         return no_figs
+    params.dist = None
     dist = fitter.fit(params.samples_all)
+    params.dist = str(dist)
     pdf_fig = gen_hist(params.samples_plot, params)
     cdf_fig = gen_sa_cdf(params.samples_plot, params)
     if params.samples_plot is not None:
@@ -45,7 +63,7 @@ def fit_click(params: Parameters)->tuple[Figure, Figure]:
         ax2.plot(x, y, color="blue")
         ax2.set_ylabel("cdf", color="blue")
         cdf_fig.tight_layout()
-    return pdf_fig, cdf_fig
+    return pdf_fig, cdf_fig, params
 
 
 # Update ui based on selected fitter

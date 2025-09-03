@@ -61,6 +61,7 @@ def upload_samples(
     samples_plot = _select_sample(samples, params.samples_plot_num)
     if samples_plot is None:
         return config.no_fig, config.no_fig, params
+    params.dist = None
     params.samples_all = samples
     params.samples_plot = samples_plot
     return gen_hist(samples, params), gen_sa_cdf(samples, params), params
